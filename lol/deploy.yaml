@@ -14,10 +14,10 @@ spec:
         app: app-wil
     spec:
       containers:
-      - name: playground
+      - name: guestbook
         image: "gcr.io/heptio-images/ks-guestbook-demo:0.1"
         ports:
-        - containerPort: 8888
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -28,6 +28,6 @@ spec:
   type: ClusterIp
   ports:
   - port: 8888
-    targetPort: 8888
+    targetPort: 80
   selector:
     app: app-wil
