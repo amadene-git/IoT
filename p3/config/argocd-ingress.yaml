@@ -1,0 +1,80 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server
+  namespace: argocd
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`127.0.0.1`)
+      priority: 10
+      services:
+        - name: argocd-server
+          port: 80
+    - kind: Rule
+      match: Host(`127.0.0.1`) && Headers(`Content-Type`, `application/grpc`)
+      priority: 11
+      services:
+        - name: argocd-server
+          port: 80
+          scheme: h2c
+  tls:
+    certResolver: default
+
+---
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   annotations:
+#     alb.ingress.kubernetes.io/backend-protocol-version: HTTP2 #This tells AWS to send traffic from the ALB using HTTP2. Can use GRPC as well if you want to leverage GRPC specific features
+#   labels:
+#     app: argogrpc
+#   name: argogrpc
+#   namespace: argocd
+# spec:
+#   ports:
+#   - name: "443"
+#     port: 443
+#     protocol: TCP
+#     targetPort: 8080
+#   selector:
+#     app.kubernetes.io/name: argocd-server
+#   sessionAffinity: None
+#   type: NodePort
+# ---
+#   apiVersion: networking.k8s.io/v1
+#   kind: Ingress
+#   metadata:
+#     annotations:
+#       alb.ingress.kubernetes.io/backend-protocol: HTTPS
+#       # Use this annotation (which must match a service name) to route traffic to HTTP2 backends.
+#       alb.ingress.kubernetes.io/conditions.argogrpc: |
+#         [{"field":"http-header","httpHeaderConfig":{"httpHeaderName": "Content-Type", "values":["application/grpc"]}}]
+#       alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+#     name: argocd
+#     namespace: argocd
+#   spec:
+#     rules:
+#     - host: argocd.argoproj.io
+#       http:
+#         paths:
+#         - path: /
+#           backend:
+#             service:
+#               name: argogrpc
+#               port:
+#                 number: 443
+#           pathType: Prefix
+#         - path: /
+#           backend:
+#             service:
+#               name: argocd-server
+#               port:
+#                 number: 443
+#           pathType: Prefix
+#     tls:
+#     - hosts:
+#       - argocd.argoproj.io
