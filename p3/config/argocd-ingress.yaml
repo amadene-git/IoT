@@ -8,21 +8,21 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`172.20.0.2`)
+      match: Host(`172.22.0.2`)
       priority: 10
       services:
         - name: argocd-server
           port: 1234
-   - kind: Rule
-     match: Host(`172.20.0.2`) && Headers(`Content-Type`, `application/grpc`)
-     priority: 11
-     services:
-       - name: argocd-server
-         port: 1234
-         scheme: h2c
- tls:
-   certResolver: default
-
+#    - kind: Rule
+#      match: Host(`172.22.0.2`) && Headers(`Content-Type`, `application/grpc`)
+#      priority: 11
+#      services:
+#        - name: argocd-server
+#          port: __ARGO__
+#          scheme: h2c
+#  tls:
+#    certResolver: default
+#
 ---
 
 # apiVersion: v1
