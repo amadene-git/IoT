@@ -15768,7 +15768,7 @@ spec:
     protocol: TCP
     targetPort: 8080
   - name: https
-    port: 1234
+    port: 443
     protocol: TCP
     targetPort: 8080
   selector:
