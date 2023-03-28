@@ -7,6 +7,7 @@ BLUE='\033[0;34m'
 
 CDIR="../config/"
 ARGO_PORT="1234"
+APP_PORT="8888"
 
 
 
@@ -23,13 +24,17 @@ kubectl -n kube-system wait --for=condition=complete jobs/helm-install-traefik-c
 kubectl -n kube-system wait --for=condition=complete jobs/helm-install-traefik --timeout=320s 1> /dev/null
 until [[ $(kubectl -n kube-system get endpoints/traefik -o=jsonpath='{.subsets[*].addresses[*].ip}') ]]; do sleep 5; done
 
-#configure traefik, add a new port for argocd, au passage on recup l'ip du cluster
+#edit svc/traefik, add a new port for argocd and app-ui, au passage on recup l'ip du cluster
 IP_TRAEFIK="$(kubectl get service traefik -n kube-system -o yaml | tail -n 1 | cut -b 11-)" 1> /dev/null
 
 kubectl get service traefik -n kube-system -o yaml | head -n 39 > traefik.yaml
 cat << EOF >> traefik.yaml 
-  - name: argocentry
+  - name: argocd-entry
     port: $ARGO_PORT
+    protocol: TCP
+    targetPort: websecure
+  - name: app-ui-entry
+    port: $APP_PORT
     protocol: TCP
     targetPort: websecure
 EOF
@@ -37,7 +42,7 @@ kubectl get service traefik -n kube-system -o yaml | tail -n 9 >> traefik.yaml
 kubectl replace -f traefik.yaml -n kube-system 1> /dev/null
 rm -rf traefik.yaml
 
-echo -e $GREEN "traefik deploy successfully $YELLOW -> on ip $IP_TRAEFIK" ${RED}
+echo -e $GREEN "traefik deploy successfully $YELLOW -> on ip $IP_TRAEFIK" ${RED}; echo -e
 
 
 
@@ -49,8 +54,7 @@ echo -e $GREEN "traefik deploy successfully $YELLOW -> on ip $IP_TRAEFIK" ${RED}
 kubectl create namespace argocd 1> /dev/null
 
 
-#on creer un yaml temporaire avec l'ip et port choisis
-
+#on creer un yaml temporaire avec l'ip et le port choisis
 sed "s/__IP_TRAEFIK__/$IP_TRAEFIK/g"    ${CDIR}argocd-install.yaml.conf > ${CDIR}argocd-install.yaml
 sed -i "s/__ARGO_PORT__/$ARGO_PORT/g"   ${CDIR}argocd-install.yaml
 kubectl apply -n argocd -f              ${CDIR}argocd-install.yaml 1> /dev/null
@@ -58,23 +62,22 @@ kubectl apply -n argocd -f              ${CDIR}argocd-install.yaml 1> /dev/null
 #wait argcd-server deploy
 kubectl wait --for=condition=Ready pods --all -n argocd --timeout=120s 1> /dev/null
 
-
 #et on fait la meme chose pour argo ingress
 sed "s/__IP_TRAEFIK__/$IP_TRAEFIK/g"    ${CDIR}argocd-ingress.yaml.conf > ${CDIR}argocd-ingress.yaml
 sed -i "s/__ARGO_PORT__/$ARGO_PORT/g"   ${CDIR}argocd-ingress.yaml
 kubectl apply -n argocd -f              ${CDIR}argocd-ingress.yaml 1> /dev/null 
 
 
-rm -rf ${CDIR}argocd-ingress.yaml 
-rm -rf ${CDIR}argocd-install.yaml 
+# rm -rf ${CDIR}argocd-ingress.yaml 
+# rm -rf ${CDIR}argocd-install.yaml 
 
 
-echo -e ${GREEN} "argocd installed successfully" ${RED}
+echo -e ${GREEN} "argocd installed successfully" ${RED}; echo -e
 
 #to get admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d > super-secret-password
 echo -e ${YELLOW} "admin password: " "$(cat super-secret-password)";
-echo -e " ArgoCD URL -> https://$IP_TRAEFIK:$ARGO_PORT"
+echo -e " ArgoCD URL -> https://$IP_TRAEFIK:$ARGO_PORT"; echo -e
 
 
 
