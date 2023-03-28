@@ -2,16 +2,16 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: dev
-  name: app-wil
+  name: app-ui
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app-wil
+      app: app-ui
   template:
     metadata:
       labels:
-        app: app-wil
+        app: app-ui
     spec:
       containers:
       - name: playground
@@ -22,7 +22,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-wil
+  name: app-ui
   namespace: dev
 spec:
   type: LoadBalancer
@@ -30,4 +30,4 @@ spec:
   - port: 8888
     targetPort: 8888
   selector:
-    app: app-wil
+    app: app-ui
