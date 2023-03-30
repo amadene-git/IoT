@@ -63,9 +63,9 @@ kubectl apply -n argocd -f              ${CDIR}argocd-install.yaml 1> /dev/null
 kubectl wait --for=condition=Ready pods --all -n argocd --timeout=120s 1> /dev/null
 
 #et on fait la meme chose pour argo ingress
-sed "s/__IP_TRAEFIK__/$IP_TRAEFIK/g"    ${CDIR}argocd-ingress.yaml.conf > ${CDIR}argocd-ingress.yaml
-sed -i "s/__ARGO_PORT__/$ARGO_PORT/g"   ${CDIR}argocd-ingress.yaml
-kubectl apply -n argocd -f              ${CDIR}argocd-ingress.yaml 1> /dev/null 
+# sed "s/__IP_TRAEFIK__/$IP_TRAEFIK/g"    ${CDIR}argocd-ingress.yaml.conf > ${CDIR}argocd-ingress.yaml
+# sed -i "s/__ARGO_PORT__/$ARGO_PORT/g"   ${CDIR}argocd-ingress.yaml
+# kubectl apply -n argocd -f              ${CDIR}argocd-ingress.yaml 1> /dev/null 
 
 
 # rm -rf ${CDIR}argocd-ingress.yaml 

@@ -8,7 +8,7 @@ spec:
     namespace: dev
     server: 'https://kubernetes.default.svc'
   source:
-    path: guestbook
+    path: appwil
     repoURL: 'https://github.com/amadene-git/IoT.git'
     targetRevision: master
   sources: []
